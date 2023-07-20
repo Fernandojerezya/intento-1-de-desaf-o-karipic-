@@ -72,3 +72,4 @@ group :test do
 end
 # Gemfile
 gem 'devise'
+gem 'aws-sdk-s3', require: false
