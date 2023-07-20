@@ -1,3 +1,6 @@
-class Photo < ApplicationRecord
-  belongs_to :user
-end
+  class Photo < ApplicationRecord
+    belongs_to :user
+    has_one_attached :image
+    validates :caption, presence: true
+  end
+
