@@ -14,7 +14,7 @@
     <% if user_signed_in? %>
       <!-- Mostrar miniatura de la imagen de perfil si el usuario ha iniciado sesión -->
       <% if current_user.profile_photo.attached? %>
-        <%= image_tag current_user.profile_photo.variant(resize: "40x40"), class: "profile-thumbnail" %>
+        <%= image_tag current_user.profile_photo.variant(resize: "20x20"), class: "profile-thumbnail" %>
       <% else %>
         <!-- Si el usuario no tiene una imagen de perfil, mostrar un icono o una imagen por defecto -->
         <%= image_tag "default_profile_thumbnail.png", class: "profile-thumbnail" %>

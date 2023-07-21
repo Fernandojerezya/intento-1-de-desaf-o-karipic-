@@ -14,5 +14,12 @@
  *= require_tree .
  *= require_self
  *= require custom
- //= require jquery 
-//= require jquery_ujs
+
+
+/* Estilo para la miniatura de la imagen de perfil */
+.profile-thumbnail {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-top: 10%;
+  }
