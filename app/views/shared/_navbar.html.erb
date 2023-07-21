@@ -1,190 +1,26 @@
-<!-- app/views/shared/_navbar.html.erb -->
 <nav>
   <ul>
     <li><%= link_to 'Inicio', root_path %></li>
     <% if user_signed_in? %>
-      <li><%= link_to 'Cerrar sesión', destroy_user_session_path, method: :delete %></li>
+    <li>
+        <%= link_to "Cerrar sesión", destroy_user_session_path, data: { turbolinks: false } %>
+    </li>
     <% else %>
       <li><%= link_to 'Iniciar sesión', new_user_session_path %></li>
       <li><%= link_to 'Registrarse', new_user_registration_path %></li>
     <% end %>
   </ul>
-</nav>
-Incluir el navbar en todas las páginas:
-Para incluir el navbar en todas las páginas, coloca el siguiente código en el layout principal de la aplicación (probablemente "application.html.erb"):
-erb
-Copy code
-<!-- app/views/layouts/application.html.erb -->
-<!DOCTYPE html>
-<html>
-<head>
-  <!-- Resto del código del encabezado... -->
-</head>
-<body>
-
-<%= render 'shared/navbar' %>
-
-<div class="container">
-  <%= yield %>
-</div>
-
-</body>
-</html>
-Permitir la acción de inicio de sesión en el controlador de aplicaciones:
-Para que el usuario pueda realizar el inicio de sesión, asegúrate de permitir la acción correspondiente en el controlador de aplicaciones ("ApplicationController"):
-ruby
-Copy code
-# app/controllers/application_controller.rb
-class ApplicationController < ActionController::Base
-  before_action :configure_permitted_parameters, if: :devise_controller?
-
-  protected
-
-  def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:sign_in, keys: [:email, :password])
-  end
-end
-Con estos pasos, deberías tener el navbar presente en todas las páginas de tu aplicación y permitir que los usuarios inicien sesión desde cualquier página. Asegúrate de ajustar el diseño y estilos del navbar según tus preferencias y requerimientos específicos. Además, si deseas agregar más funcionalidades al navbar, simplemente modifica el archivo "_navbar.html.erb" y los cambios se reflejarán en todas las páginas donde se incluye.
-
-
-
-
-
-User
-y crear una pagina principal que sea el root donde se muestren en mosaico todas las imagenes que suba el dueño en su pagina de carga y al picharlas si el usuario inició sesión lo dirige a la imagen descripción y pueda emitir comentario, si no le envia un mensaje que inicie sesión o se registre
-ChatGPT
-Para crear la página principal que sea la raíz de la aplicación, donde se muestren en mosaico todas las imágenes que suba el dueño, y que redirija a la imagen y su descripción con la posibilidad de realizar comentarios si el usuario ha iniciado sesión, o mostrar un mensaje para que inicie sesión o se registre si no lo ha hecho, sigue estos pasos:
-
-Controlador y vista para la página principal:
-Primero, crea un controlador para la página principal y una vista para mostrar las imágenes en mosaico:
-bash
-Copy code
-rails generate controller HomeController index
-Modificación del controlador "HomeController":
-En el controlador "HomeController", obtén las imágenes cargadas por el dueño de la aplicación y pásalas a la vista:
-ruby
-Copy code
-# app/controllers/home_controller.rb
-class HomeController < ApplicationController
-  def index
-    @photos = Photo.all
-  end
-end
-Modificación de la vista de la página principal:
-Actualiza la vista "index.html.erb" para mostrar las imágenes en mosaico y redireccionar a la descripción de la imagen si el usuario ha iniciado sesión, o mostrar un mensaje para iniciar sesión o registrarse si no lo ha hecho:
-erb
-Copy code
-<!-- app/views/home/index.html.erb -->
-<h1>Bienvenido a KariPic</h1>
-
-<% if user_signed_in? %>
-  <div class="mosaic">
-    <% @photos.each do |photo| %>
-      <div class="photo">
-        <%= link_to image_tag(photo.image.variant(resize: '300x300')), photo_path(photo) %>
-        <p><strong><%= photo.caption %></strong></p>
-      </div>
+  <div class="navbar-right">
+    <% if user_signed_in? %>
+      <!-- Mostrar miniatura de la imagen de perfil si el usuario ha iniciado sesión -->
+      <% if current_user.profile_photo.attached? %>
+        <%= image_tag current_user.profile_photo.variant(resize: "40x40"), class: "profile-thumbnail" %>
+      <% else %>
+        <!-- Si el usuario no tiene una imagen de perfil, mostrar un icono o una imagen por defecto -->
+        <%= image_tag "default_profile_thumbnail.png", class: "profile-thumbnail" %>
+      <% end %>
+    <% else %>
+     
     <% end %>
   </div>
-<% else %>
-  <p>Para acceder a las imágenes y descripciones, por favor inicia sesión o regístrate.</p>
-  <%= link_to 'Iniciar sesión', new_user_session_path %>
-  <%= link_to 'Registrarse', new_user_registration_path %>
-<% end %>
-Ruta para la página principal (root):
-Actualiza el archivo "config/routes.rb" para establecer la página principal como la raíz de la aplicación:
-ruby
-Copy code
-# config/routes.rb
-Rails.application.routes.draw do
-  root 'home#index'
-  # Resto de las rutas...
-end
-Con estos pasos, cuando el dueño de la aplicación suba imágenes, estas se mostrarán en la página principal en formato de mosaico. Al hacer clic en una imagen, si el usuario ha iniciado sesión, será dirigido a la página con la descripción de la imagen y podrá emitir comentarios. Si el usuario no ha iniciado sesión, se le mostrará un mensaje para que inicie sesión o se registre. Asegúrate de ajustar el diseño y estilos según tus preferencias y requerimientos específicos.
-
-
-
-
-
-User
-puedo hacer esto con scalfold
-ChatGPT
-Sí, puedes usar el comando scaffold para generar una parte significativa de la funcionalidad requerida, pero aún necesitarás algunas modificaciones manuales para cumplir con todos los requisitos específicos, como el acceso restringido para la carga de imágenes por parte del dueño de la aplicación y la personalización del mensaje para usuarios no autenticados.
-
-A continuación, te mostraré cómo usar el comando scaffold para crear una parte de la funcionalidad y luego realizar las modificaciones necesarias para cumplir con los requisitos adicionales:
-
-Generación del scaffold para las fotos:
-Primero, genera el scaffold para el modelo de fotos:
-bash
-Copy code
-rails generate scaffold Photo user:references caption:text
-Modificaciones manuales:
-Después de generar el scaffold, realizarás algunas modificaciones manuales para agregar las funcionalidades específicas requeridas.
-En el modelo photo.rb, agrega la restricción para que solo el dueño de la aplicación pueda subir fotos:
-
-ruby
-Copy code
-# app/models/photo.rb
-class Photo < ApplicationRecord
-  belongs_to :user
-  has_one_attached :image
-  validates :caption, presence: true
-  validate :validate_user_owner
-
-  private
-
-  def validate_user_owner
-    errors.add(:base, 'Solo el dueño puede subir fotos.') unless user&.admin?
-  end
-end
-En el controlador photos_controller.rb, modifica la acción new para permitir solo al dueño de la aplicación crear fotos:
-
-ruby
-Copy code
-# app/controllers/photos_controller.rb
-class PhotosController < ApplicationController
-  before_action :authenticate_user!, except: [:index, :show]
-  before_action :check_admin, only: [:new, :create]
-
-  # Resto del código...
-
-  private
-
-  def check_admin
-    redirect_to root_path, alert: 'Solo el dueño puede subir fotos.' unless current_user&.admin?
-  end
-end
-En el archivo de rutas routes.rb, asegúrate de que solo el dueño pueda acceder a las rutas para crear y eliminar fotos:
-
-ruby
-Copy code
-# config/routes.rb
-Rails.application.routes.draw do
-  root 'home#index'
-
-  resources :photos, only: [:index, :show]
-  resources :comments, only: [:create]
-
-  authenticate :user, lambda { |u| u.admin? } do
-    resources :photos, only: [:new, :create, :destroy]
-  end
-end
-Finalmente, en la vista index.html.erb, agrega el mensaje para usuarios no autenticados:
-
-erb
-Copy code
-<!-- app/views/photos/index.html.erb -->
-<h1>Fotos</h1>
-
-<% if user_signed_in? %>
-  <!-- Resto del código para el mosaico de imágenes... -->
-<% else %>
-  <p>Para acceder a las imágenes y descripciones, por favor inicia sesión o regístrate.</p>
-  <%= link_to 'Iniciar sesión', new_user_session_path %>
-  <%= link_to 'Registrarse', new_user_registration_path %>
-<% end %>
-
-
-
-
-
+</nav>

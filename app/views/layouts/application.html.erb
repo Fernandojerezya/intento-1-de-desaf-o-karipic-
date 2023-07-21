@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="dark">
   <head>
     <title>KariPic</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -8,15 +8,18 @@
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <!-- Agregar pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+
   </head>
 
   <body>
-  
+
 <%= render 'shared/navbar' %>
 
 <div class="container">
   <%= yield %>
-</div>
+</div> 
 
-  </body>
+    </body>
 </html>
